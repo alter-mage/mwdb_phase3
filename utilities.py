@@ -20,3 +20,16 @@ feature_extraction = [color_moment.get_cm_vector, elbp.get_elbp_vector, hog.get_
 query_transformation = [pca.get_transformation, svd.get_transformation, k_means.get_transformation]
 
 labels = ['x_label', 'y_label', 'z_label']
+label_dict = {
+        'cc':0, 
+        'con':1, 
+        'emboss':2, 
+        'jitter':3, 
+        'neg':4, 
+        'noise01':5, 
+        'noise02':6, 
+        'original':7,
+        'poster':8, 
+        'rot':9, 
+        'smooth':10, 
+        'stipple':11}

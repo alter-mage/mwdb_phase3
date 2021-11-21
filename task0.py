@@ -17,19 +17,7 @@ def start_task0(metadata_file):
 
     # Iterating through folder and finding image models
     images = {}
-    label_dict = {
-        'cc':0, 
-        'con':1, 
-        'emboss':2, 
-        'jitter':3, 
-        'neg':4, 
-        'noise01':5, 
-        'noise02':6, 
-        'original':7,
-        'poster':8, 
-        'rot':9, 
-        'smooth':10, 
-        'stipple':11}
+    
     for filename in os.listdir(images_dir):
         img = cv2.imread(os.path.join(images_dir, filename), cv2.IMREAD_GRAYSCALE)
         if img is not None:
@@ -37,7 +25,7 @@ def start_task0(metadata_file):
             for i in range(3):
                 images[filename][utilities.feature_models[i]] = utilities.feature_extraction[i](img)
             x, y, z = filename.split('.')[0].split('-')[1:]
-            images[filename]['x_label'] = label_dict[x]
+            images[filename]['x_label'] = utilities.label_dict[x]
             images[filename]['y_label'] = int(y)
             images[filename]['z_label'] = int(z)
     # Saving image models in pickle file 'metadata.pickle
