@@ -5,10 +5,10 @@ import generate_data_matrix
 import svm
 import numpy as np
 import cv2
-# import aggregation
 import csv
 import min_max_scaler
 import decision_tree
+# import accuracy_metrics
 
 from sklearn.model_selection import train_test_split
 def start_task1():
@@ -42,7 +42,16 @@ def start_task1():
     
     reduction_obj_right = utilities.reduction_technique_map[reduction_technique](k, data_matrix)
     left_matrix, core_matrix, right_matrix = reduction_obj_right.transform()
-    print(left_matrix.shape, core_matrix.shape, right_matrix.shape)
+
+    latent_out_file_path = '%s_%s_%s_%s' % ('1', utilities.feature_models[model], str(k), utilities.reduction_technique_map_str[reduction_technique])
+    with open(latent_out_file_path+'.pickle', 'wb') as handle:
+        pickle.dump({
+            'left_matrix': left_matrix,
+            'core_matrix': core_matrix,
+            'right_matrix': right_matrix
+        }, handle, protocol=pickle.HIGHEST_PROTOCOL)
+
+    # print(left_matrix.shape, core_matrix.shape, right_matrix.shape)
     #clf = svm.fit(left_matrix, label_matrix=label_matrix)
     clf = decision_tree.fit(left_matrix,label_matrix=label_matrix)
 
