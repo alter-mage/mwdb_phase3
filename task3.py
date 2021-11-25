@@ -42,6 +42,14 @@ def start_task3():
     
     reduction_obj_right = utilities.reduction_technique_map[reduction_technique](k, data_matrix)
     left_matrix, core_matrix, right_matrix = reduction_obj_right.transform()
+
+    latent_out_file_path = '%s_%s_%s_%s' % ('3', utilities.feature_models[model], str(k), utilities.reduction_technique_map_str[reduction_technique])
+    with open(latent_out_file_path+'.pickle', 'wb') as handle:
+        pickle.dump({
+            'left_matrix': left_matrix,
+            'core_matrix': core_matrix,
+            'right_matrix': right_matrix
+        }, handle, protocol=pickle.HIGHEST_PROTOCOL)
     # print(left_matrix.shape, core_matrix.shape, right_matrix.shape)
     #clf = svm.fit(left_matrix, label_matrix=label_matrix)
     
