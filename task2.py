@@ -10,6 +10,7 @@ import csv
 import min_max_scaler
 import decision_tree
 from sklearn.model_selection import train_test_split
+import accuracy_metrics
 
 def start_task2():
 
