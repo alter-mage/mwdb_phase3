@@ -8,12 +8,12 @@ import cv2
 import csv
 import min_max_scaler
 import decision_tree
-# import accuracy_metrics
-
+from min_max_scaler import transform as min_max_tsf
 from sklearn.model_selection import train_test_split
-def start_task1():
 
-    # Reading metadata.pickle file, image representations
+from svm import MulticlassSVM as SVM
+
+def start_task1():
     with open('metadata.pickle', 'rb') as handle:
         metadata = pickle.load(handle)
         
@@ -32,7 +32,9 @@ def start_task1():
     while not (1 <= k <= k_upper_limit - 1):
         k = int(input('Enter value of k (latent semantics): '))
     data_matrix, label_matrix = generate_data_matrix.get_matrix(metadata, model, 1)
-    # print(data_matrix.shape, label_matrix.shape)
+    data_matrix = min_max_tsf(data_matrix)
+    
+
     if model == 0:
         reduction_technique = 0
     elif model == 1:
@@ -42,7 +44,8 @@ def start_task1():
     
     reduction_obj_right = utilities.reduction_technique_map[reduction_technique](k, data_matrix)
     left_matrix, core_matrix, right_matrix = reduction_obj_right.transform()
-
+    print(left_matrix.shape, core_matrix.shape, right_matrix.shape)
+    
     latent_out_file_path = '%s_%s_%s_%s' % ('1', utilities.feature_models[model], str(k), utilities.reduction_technique_map_str[reduction_technique])
     with open(latent_out_file_path+'.pickle', 'wb') as handle:
         pickle.dump({
@@ -56,18 +59,18 @@ def start_task1():
     clf = decision_tree.fit(left_matrix,label_matrix=label_matrix)
 
     X_train, X_test, y_train, y_test = train_test_split(left_matrix, label_matrix,test_size = 0.10)
-    
-    
-    clf = decision_tree.fit(X_train,label_matrix=y_train)
+     
+    clf = SVM()
+    clf.fit(X_train,y_train)
     count = 0
     total = 0
-    for i in range(len(X_test)):
-        prediction = int(clf.predict([X_test[i]])[0]) 
-        print (prediction,y_test[i])
-        if prediction == y_test[i]:
-            count +=1
-        total +=1 
-
+    prediction = clf.predict(X_test)
+    
+    for i in range(len(prediction)):
+        #print(prediction[i] , y_test[i])
+        if prediction[i] == y_test[i]:
+            count +=1 
+        total+=1
     print(count , total) 
     """
     test_dir = os.path.join(os.getcwd(), 'test_images')
