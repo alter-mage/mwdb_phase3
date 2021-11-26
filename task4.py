@@ -49,23 +49,24 @@ def start_task4():
     left_matrix = latent_semantics['left_matrix']
     right_matrix = latent_semantics['right_matrix']
 
-    images = []
+    images, features = [], []
     image_folder = os.path.join(os.getcwd(), input('enter image folder: '))
     for filename in os.listdir(image_folder):
         img = cv2.imread(os.path.join(image_folder, filename), cv2.IMREAD_GRAYSCALE)
         img_vector = feature_model(img)
-        images.append(img_vector)
+        images.append(img)
+        features.append(img_vector)
 
     query_image_path = os.path.join(os.getcwd(), input('enter query image name')+'.png')
     query_image = cv2.imread(query_image_path, cv2.IMREAD_GRAYSCALE)
     query_image_vector = feature_model(query_image)
 
-    images.append(query_image_vector)
+    features.append(query_image_vector)
     # images = min_max_scaler.transform(images)
     # transformed_images = query_transformation_model(images, right_matrix)
 
     Scaler = MinMaxScaler()
-    min_max_images = Scaler.fit_transform(images)
+    min_max_images = Scaler.fit_transform(features)
     transformed_images = query_transformation_model(min_max_images, right_matrix)
 
     index_images = transformed_images[:-1]
@@ -92,24 +93,23 @@ def start_task4():
     unique_image_indexes = set(retrieved_image_indexes)
 
     unique_images = [index_images[image_index] for image_index in unique_image_indexes]
-    image_similarity_map = similarity_model(query, unique_images)
-    image_similarity_map = sorted(image_similarity_map, key=lambda x: x[0], reverse=True)[:t]
+    similarity_map = similarity_model(query, unique_images)
+    similarity_image_map = [[score, images[index]] for score, index in zip(similarity_map, unique_image_indexes)]
+    similarity_image_map = sorted(similarity_image_map, key=lambda x: x[0], reverse=True)[:t]
 
     fig, axes = plt.subplots(t + 1, 1)
     topk = []
     for i, axis in enumerate(axes):
         if i == 0:
             img = query_image
-            axis.text(74, 25, query, size=9)
+            # axis.text(74, 25, query, size=9)
             axis.text(74, 45, 'Original image', size=9)
         else:
-            img = image_similarity_map[i][1]
-            axis.text(74, 25, images[i - 1], size=9)
-            axis.text(74, 45, str(image_similarity_map[i][0]), size=9)
+            img = similarity_image_map[i-1][1]
+            axis.text(74, 45, str(similarity_image_map[i-1][0]), size=9)
             topk.append(img)
         axis.imshow(img, cmap='gray')
         axis.tick_params(left=False, right=False, labelleft=False, labelbottom=False, bottom=False)
     fig.suptitle(str(t) + ' most similar images - ' +
                  utilities.similarity_measures[utilities.feature_models.index(vector_file_tokens[1])], size=10)
     plt.show()
-    print('here')
