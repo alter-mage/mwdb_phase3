@@ -25,12 +25,13 @@ def build_hash_buckets(hash_family, images):
 
 
 def retrieve_images(layered_hash_buckets, query_hash_codes, pruned_hash, k):
-    retrieve_image_indexes = []
+    retrieve_image_indexes, buckets_searched = [], 0
     for query_hash_code, hash_bucket in zip(query_hash_codes, layered_hash_buckets):
         for hash_code in hash_bucket:
             if query_hash_code[:k - pruned_hash] == hash_code[:k - pruned_hash]:
+                buckets_searched += 1
                 retrieve_image_indexes.extend(hash_bucket[hash_code])
-    return retrieve_image_indexes
+    return retrieve_image_indexes, buckets_searched
 
 
 def build_indexes(l, k, left_matrix):
@@ -135,7 +136,7 @@ def get_top_images(l, k, vector_file, t, image_folder, query_image):
     retrieved_image_indexes, pruned_hash = [], -1
     while len(set(retrieved_image_indexes)) < t:
         pruned_hash += 1
-        retrieved_image_indexes = retrieve_images(layered_hash_bucket, query_hash_codes, pruned_hash, k)
+        retrieved_image_indexes, buckets_searched = retrieve_images(layered_hash_bucket, query_hash_codes, pruned_hash, k)
     unique_image_indexes = set(retrieved_image_indexes)
 
     unique_images = [index_images[image_index] for image_index in unique_image_indexes]
@@ -160,7 +161,8 @@ def get_top_images(l, k, vector_file, t, image_folder, query_image):
     metrics = {
         'miss_rate': (t-hit) / t,
         'false_positive': (len(unique_image_indexes) - hit) / t,
-        'index_size_in_bytes': index_size
+        'index_size_in_bytes': index_size,
+        'bucket_searched': buckets_searched
     }
 
     return similarity_image_map, metrics
