@@ -7,6 +7,7 @@ import numpy as np
 import cv2
 import csv
 import min_max_scaler
+import ppr
 import decision_tree
 from min_max_scaler import transform as min_max_tsf
 from sklearn.model_selection import train_test_split
@@ -16,7 +17,8 @@ from svm import MulticlassSVM as SVM
 def start_task1():
     with open('metadata.pickle', 'rb') as handle:
         metadata = pickle.load(handle)
-        
+    with open('simp.pickle', 'rb') as handle:
+        simp_data = pickle.load(handle)
     
     model = -1
     print()
@@ -53,6 +55,25 @@ def start_task1():
     reduction_obj_right = utilities.reduction_technique_map[reduction_technique](k, data_matrix)
     left_matrix, core_matrix, right_matrix = reduction_obj_right.transform()
     # print(left_matrix.shape, core_matrix.shape, right_matrix.shape)
+    
+    # Getting features of test_images
+    test_dir = os.path.join(os.getcwd(), 'test_images')
+    if not os.path.isdir(test_dir):
+        print("test_images file not found!")
+        quit()
+    test_array = []
+    test_labels = []
+    for filename in os.listdir(test_dir):
+        if filename in metadata:
+            test_array.append(metadata[filename][utilities.feature_models[model]])
+            test_labels.append(metadata[filename]['x_label'])
+        else:
+            img = cv2.imread(os.path.join(test_dir, filename), cv2.IMREAD_GRAYSCALE)
+            test_array.append(utilities.feature_extraction[model](img))
+            x, y, z = filename.split('.')[0].split('-')[1:]
+            test_labels.append(utilities.label_dict[x])
+    test_array = np.array(test_array)
+    test_labels = np.array(test_labels)
 
     if c == 0:
         print('\nSVM')
@@ -60,7 +81,11 @@ def start_task1():
     elif c == 1:
         print('\nDecision Tree')
     else:
-        print('PPR')
+        print('\nPPR')
+        print(utilities.feature_models[model])
+        similarity_m = simp_data[utilities.feature_models[model]]['T']
+        print(similarity_m.shape, test_array.shape)
+        results = ppr.predict(similarity_m, test_array)
     
     latent_out_file_path = '%s_%s_%s_%s' % ('1', utilities.feature_models[model], str(k), utilities.reduction_technique_map_str[reduction_technique])
     with open(latent_out_file_path+'.pickle', 'wb') as handle:
@@ -72,22 +97,22 @@ def start_task1():
 
     # print(left_matrix.shape, core_matrix.shape, right_matrix.shape)
     #clf = svm.fit(left_matrix, label_matrix=label_matrix)
-    clf = decision_tree.fit(left_matrix,label_matrix=label_matrix)
+    # clf = decision_tree.fit(left_matrix,label_matrix=label_matrix)
 
-    X_train, X_test, y_train, y_test = train_test_split(left_matrix, label_matrix,test_size = 0.10)
+    # X_train, X_test, y_train, y_test = train_test_split(left_matrix, label_matrix,test_size = 0.10)
      
-    clf = SVM()
-    clf.fit(X_train,y_train)
-    count = 0
-    total = 0
-    prediction = clf.predict(X_test)
+    # clf = SVM()
+    # clf.fit(X_train,y_train)
+    # count = 0
+    # total = 0
+    # prediction = clf.predict(X_test)
     
-    for i in range(len(prediction)):
-        #print(prediction[i] , y_test[i])
-        if prediction[i] == y_test[i]:
-            count +=1 
-        total+=1
-    print(count , total) 
+    # for i in range(len(prediction)):
+    #     #print(prediction[i] , y_test[i])
+    #     if prediction[i] == y_test[i]:
+    #         count +=1 
+    #     total+=1
+    # print(count , total) 
     """
     test_dir = os.path.join(os.getcwd(), 'test_images')
     if not os.path.isdir(test_dir):
