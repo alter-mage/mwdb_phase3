@@ -49,10 +49,7 @@ def build_index(l, k, left_matrix, index_images, query):
     return layered_hash_bucket, query_hash_codes
 
 
-def get_top_images(k=0):
-    l = int(input('enter num of layers: '))
-    k = int(input('enter num of hashes per layer: '))
-    vector_file = input('enter vector file: ')
+def get_top_images(k, l, vector_file, t, image_folder, query_image):
     vector_file_tokens = vector_file.split('_')
     feature_model = utilities.feature_extraction[utilities.feature_models.index(vector_file_tokens[1])]
     query_transformation_model = utilities.query_transformation[utilities.reduction_technique_map_str.index(
@@ -66,15 +63,12 @@ def get_top_images(k=0):
     right_matrix = latent_semantics['right_matrix']
 
     images, features = [], []
-    image_folder = os.path.join(os.getcwd(), input('enter image folder: '))
     for filename in os.listdir(image_folder):
         img = cv2.imread(os.path.join(image_folder, filename), cv2.IMREAD_GRAYSCALE)
         img_vector = feature_model(img)
         images.append(img)
         features.append(img_vector)
 
-    query_image_path = os.path.join(os.getcwd(), input('enter query image name') + '.png')
-    query_image = cv2.imread(query_image_path, cv2.IMREAD_GRAYSCALE)
     query_image_vector = feature_model(query_image)
 
     features.append(query_image_vector)
@@ -85,11 +79,6 @@ def get_top_images(k=0):
     query = transformed_images[-1]
 
     layered_hash_bucket, query_hash_codes = build_index(l, k, left_matrix, index_images, query)
-
-    if not k:
-        t = int(input('enter number of retrievals: '))
-    else:
-        t = k
 
     retrieved_image_indexes, pruned_hash = [], -1
     while len(set(retrieved_image_indexes)) < t:
@@ -102,11 +91,22 @@ def get_top_images(k=0):
     similarity_image_map = [[score, images[index]] for score, index in zip(similarity_map, unique_image_indexes)]
     similarity_image_map = sorted(similarity_image_map, key=lambda x: x[0], reverse=True)
 
-    return similarity_image_map, t, query_image, vector_file_tokens
+    return similarity_image_map, vector_file_tokens
 
 
 def start_task4():
-    similarity_image_map, t, query_image, vector_file_tokens = get_top_images()
+    l = int(input('enter num of layers: '))
+    k = int(input('enter num of hashes per layer: '))
+    vector_file = input('enter vector file: ')
+    t = int(input('enter number of retrievals: '))
+    image_folder = os.path.join(os.getcwd(), input('enter image folder: '))
+
+    query_image_path = os.path.join(os.getcwd(), input('enter query image name') + '.png')
+    query_image = cv2.imread(query_image_path, cv2.IMREAD_GRAYSCALE)
+
+    similarity_image_map, vector_file_tokens = get_top_images(
+        l, k, vector_file, t, image_folder, query_image
+    )
 
     top_images = similarity_image_map[:t]
     fig, axes = plt.subplots(t + 1, 1)
