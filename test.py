@@ -1,4 +1,3 @@
-import ppr
 import math
 import numpy as np
 import pickle
@@ -10,7 +9,7 @@ with open('simp.pickle', 'rb') as handle:
         simp_data = pickle.load(handle)
 
 similarity_m = simp_data['hog']['T']
-num_subjects = len(similarity_m)+1
+num_subjects = len(similarity_m) + 1
 # image[utilities.feature_models[i]] = utilities.feature_extraction[i](img)
 q = 1
 pagerank = np.random.uniform(low=0, high=1, size=num_subjects)
@@ -34,28 +33,32 @@ for filename in os.listdir(images_dir):
                 image[utilities.feature_models[i]] = utilities.feature_extraction[i](img)
             images[filename] = image
 
-images['image-cc-13-4.png'].keys()
-q = images['image-cc-13-4.png']['hog']
+images['image-poster-11-10.png'].keys()
+q = images['image-poster-11-10.png']['hog']
 # q.shape
 # similarity_m = np.append(similarity_m, q, axis=0)
-similarity_m = np.vstack([similarity_m, q])
+similarity_q_m = np.vstack([similarity_m, q])
+t_matrix = similarity_q_m @ similarity_q_m.T
 # similarity_m.shape
-T_matrix = np.dot(similarity_m, similarity_m.T)
+# T_matrix = np.dot(similarity_m, similarity_m.T)
 
 convergence = False
-similarity_m = min_max_scaler.transform(T_matrix)
+similarity_m = min_max_scaler.transform(t_matrix)
 
 print(s_vector)
-while not convergence:
-    pagerank_new = (1 - c) * np.dot(similarity_m, pagerank) + c * s_vector
-    
-    pagerank_error_new = pagerank_new - pagerank
 
-    convergence = True
-    for i, row in enumerate(pagerank_error):
-        if pagerank_error_new[i] - pagerank_error[i] > 0.01:
-            # RuntimeWarning: invalid value encountered in double_scalars
-            convergence = False
-    pagerank = pagerank_new
-    pagerank_error = pagerank_error_new
+pagerank = np.linalg.inv(np.identity(num_subjects) - (1-c) * similarity_m) @ np.atleast_2d(c * s_vector).T
+
+# while not convergence:
+#     pagerank_new = (1 - c) * np.dot(similarity_m, pagerank) + c * s_vector
+#
+#     pagerank_error_new = pagerank_new - pagerank
+#
+#     convergence = True
+#     for i, row in enumerate(pagerank_error):
+#         if pagerank_error_new[i] - pagerank_error[i] > 0.01:
+#             # RuntimeWarning: invalid value encountered in double_scalars
+#             convergence = False
+#     pagerank = pagerank_new
+#     pagerank_error = pagerank_error_new
 print(pagerank)
