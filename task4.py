@@ -34,7 +34,7 @@ def retrieve_images(layered_hash_buckets, query_hash_codes, pruned_hash, k):
 
 def build_indexes(l, k, left_matrix):
     hash_family = {}
-    random_vectors = [np.random.randn(l, len(left_matrix[0])) for _ in range(k)]
+    random_vectors = [np.random.randn(k, len(left_matrix[0])) for _ in range(l)]
     for index, hashes in enumerate(random_vectors):
         hash_family['l' + str(index + 1)] = hashes
     return hash_family
@@ -117,7 +117,7 @@ def get_top_images(l, k, vector_file, t, image_folder, query_image):
 
     unique_images = [index_images[image_index] for image_index in unique_image_indexes]
     similarity_map = similarity_model(query, unique_images)
-    similarity_image_map = [[score, unique_images[index], images[index]] for score, index in zip(
+    similarity_image_map = [[score, index_images[index], images[index]] for score, index in zip(
         similarity_map, unique_image_indexes
     )]
     similarity_image_map = sorted(similarity_image_map, key=lambda x: x[0], reverse=True)
