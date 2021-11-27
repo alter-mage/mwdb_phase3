@@ -33,6 +33,14 @@ def start_task1():
         k = int(input('Enter value of k (latent semantics): '))
     data_matrix, label_matrix = generate_data_matrix.get_matrix(metadata, model, 1)
     data_matrix = min_max_tsf(data_matrix)
+
+    c = -1
+    print()
+    print("Classifiers:")
+    for index, value in enumerate(utilities.classifiers):
+        print(index, value)
+    while not (0 <= c <= 2):
+        c = int(input('Enter Classifier Number (0-2): '))
     
 
     if model == 0:
@@ -44,7 +52,15 @@ def start_task1():
     
     reduction_obj_right = utilities.reduction_technique_map[reduction_technique](k, data_matrix)
     left_matrix, core_matrix, right_matrix = reduction_obj_right.transform()
-    print(left_matrix.shape, core_matrix.shape, right_matrix.shape)
+    # print(left_matrix.shape, core_matrix.shape, right_matrix.shape)
+
+    if c == 0:
+        print('\nSVM')
+    
+    elif c == 1:
+        print('\nDecision Tree')
+    else:
+        print('PPR')
     
     latent_out_file_path = '%s_%s_%s_%s' % ('1', utilities.feature_models[model], str(k), utilities.reduction_technique_map_str[reduction_technique])
     with open(latent_out_file_path+'.pickle', 'wb') as handle:
