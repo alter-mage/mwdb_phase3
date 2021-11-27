@@ -6,16 +6,17 @@ import cv2
 import matplotlib.pyplot as plt
 import utilities
 
+
 def get_feedback():
-    label_input = [int(i) for i in input.split("enter 1 or 0")]
+    label_input = [int(i) for i in input("enter 1 or 0").split()]
     return label_input
+
 
 def get_predictor_object(top_k_relevant, labels_for_top_k):
 
-    X_train = np.ndarray.tolist(top_k_relevant)
-
+    X_train = top_k_relevant
     #before this you have to change the label from 1,0 to +1 and -1
-    y_train = np.ndarray.tolist(labels_for_top_k)
+    y_train = labels_for_top_k
     training_data = []
     for i in range(len(X_train)):
         a =[] 
@@ -50,7 +51,7 @@ def start_task6():
             # axis.text(74, 25, query, size=9)
             axis.text(74, 45, 'Original image', size=9)
         else:
-            img = top_images[i - 1][1]
+            img = top_images[i - 1][2]
             axis.text(74, 45, str(top_images[i - 1][0]), size=9)
         axis.imshow(img, cmap='gray')
         axis.tick_params(left=False, right=False, labelleft=False, labelbottom=False, bottom=False)
@@ -62,7 +63,7 @@ def start_task6():
     #now you will have t images and t labels
     top_k_train = []
     for i in top_images:
-        top_k_train.append(top_images[1])
+        top_k_train.append(i[1])
 
     labels = get_feedback()
     while not (len(labels) == t):
