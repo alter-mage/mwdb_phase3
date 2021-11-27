@@ -33,3 +33,5 @@ label_dict = {
         'rot':9, 
         'smooth':10, 
         'stipple':11}
+
+classifiers = ['SVM', 'Decision Tree', 'PPR']
