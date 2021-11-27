@@ -148,7 +148,7 @@ def start_task4():
             # axis.text(74, 25, query, size=9)
             axis.text(74, 45, 'Original image', size=9)
         else:
-            img = top_images[i - 1][1]
+            img = top_images[i - 1][2]
             axis.text(74, 45, str(top_images[i - 1][0]), size=9)
         axis.imshow(img, cmap='gray')
         axis.tick_params(left=False, right=False, labelleft=False, labelbottom=False, bottom=False)
