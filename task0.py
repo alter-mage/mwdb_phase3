@@ -16,23 +16,25 @@ def start_task0(metadata_file, simp_file):
         quit()
 
     # Iterating through folder and finding image models
-    images = {}
-    
-    for filename in os.listdir(images_dir):
-        image = {}
-        img = cv2.imread(os.path.join(images_dir, filename), cv2.IMREAD_GRAYSCALE)
-        if img is not None:
-            image = {'image': img}
-            for i in range(3):
-                image[utilities.feature_models[i]] = utilities.feature_extraction[i](img)
-            x, y, z = filename.split('.')[0].split('-')[1:]
-            image['x_label'] = utilities.label_dict[x]
-            image['y_label'] = int(y)
-            image['z_label'] = int(z)
-            images[filename] = image
-    # Saving image models in pickle file 'metadata.pickle
-    with open(metadata_file, 'wb') as handle:
-        pickle.dump(images, handle, protocol=pickle.HIGHEST_PROTOCOL)
+    if os.path.isfile(metadata_file):
+        with open(metadata_file, 'rb') as handle:
+            images = pickle.load(handle)
+    else:
+        images = {}
+        for filename in os.listdir(images_dir):
+            img = cv2.imread(os.path.join(images_dir, filename), cv2.IMREAD_GRAYSCALE)
+            if img is not None:
+                image = {'image': img}
+                for i in range(3):
+                    image[utilities.feature_models[i]] = utilities.feature_extraction[i](img)
+                x, y, z = filename.split('.')[0].split('-')[1:]
+                image['x_label'] = utilities.label_dict[x]
+                image['y_label'] = int(y)
+                image['z_label'] = int(z)
+                images[filename] = image
+        # Saving image models in pickle file 'metadata.pickle
+        with open(metadata_file, 'wb') as handle:
+            pickle.dump(images, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
     # Computing similarity & transformation matrices
     similarity_map = {}

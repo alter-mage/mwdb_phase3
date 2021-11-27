@@ -36,8 +36,7 @@ def group_by_type_all(metadata, feature_model):
     data_matrix = []
     for type_ in sorted(type_image_map):
         data_matrix.append(np.mean(type_image_map[type_], axis=0))
-    data_matrix = np.array(min_max_scaler.transform(data_matrix), dtype=np.float32)
-    type_matrix = min_max_scaler.transform(data_matrix)
+    type_matrix = np.array(min_max_scaler.transform(data_matrix), dtype=np.float32)
     return sorted(type_image_map), type_matrix
 
 
@@ -72,8 +71,7 @@ def group_by_subject_all(metadata, feature_model):
     data_matrix = []
     for subject in sorted(subject_image_map):
         data_matrix.append(np.mean(subject_image_map[subject], axis=0))
-    data_matrix = np.array(min_max_scaler.transform(data_matrix))
-    subject_matrix = min_max_scaler.transform(data_matrix)
+    subject_matrix = np.array(min_max_scaler.transform(data_matrix))
     return sorted(subject_image_map), subject_matrix
 
 
@@ -89,8 +87,7 @@ def group_by_image_all(metadata, feature_model):
     data_matrix = []
     for image_ in sorted(image_image_map):
         data_matrix.append(np.mean(image_image_map[image_], axis=0))
-    data_matrix = np.array(min_max_scaler.transform(data_matrix), dtype=np.float32)
-    image_matrix = min_max_scaler.transform(data_matrix)
+    image_matrix = np.array(min_max_scaler.transform(data_matrix), dtype=np.float32)
     return sorted(image_image_map), image_matrix
 
 
