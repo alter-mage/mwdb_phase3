@@ -32,9 +32,29 @@ def retrieve_images(layered_hash_buckets, query_hash_codes, pruned_hash, k):
     return retrieve_image_indexes
 
 
+def build_indexes(l, k, left_matrix):
+    hash_family = {}
+    random_vectors = [np.random.randn(l, len(left_matrix[0])) for _ in range(k)]
+    for index, hashes in enumerate(random_vectors):
+        hash_family['l' + str(index + 1)] = hashes
+    return hash_family
+
+
+def populate_indexes(hash_family, index_images, query):
+    layered_hash_bucket = build_hash_buckets(hash_family, index_images)
+
+    query_hash_codes = []
+    for layer in hash_family:
+        query_hash_layer_value = hash_family[layer].dot(np.array(query))
+        query_hash_value_code = ''.join(['1' if hash_value > 0 else '0' for hash_value in query_hash_layer_value])
+        query_hash_codes.append(query_hash_value_code)
+
+    return layered_hash_bucket, query_hash_codes
+
+
 def build_index(l, k, left_matrix, index_images, query):
     hash_family = {}
-    random_vectors = [np.random.randn(k, len(left_matrix[0])) for _ in range(l)]
+    random_vectors = [np.random.randn(l, len(left_matrix[0])) for _ in range(k)]
     for index, hashes in enumerate(random_vectors):
         hash_family['l' + str(index + 1)] = hashes
 
@@ -49,7 +69,7 @@ def build_index(l, k, left_matrix, index_images, query):
     return layered_hash_bucket, query_hash_codes
 
 
-def get_top_images(k, l, vector_file, t, image_folder, query_image):
+def get_top_images(l, k, vector_file, t, image_folder, query_image):
     vector_file_tokens = vector_file.split('_')
     feature_model = utilities.feature_extraction[utilities.feature_models.index(vector_file_tokens[1])]
     query_transformation_model = utilities.query_transformation[utilities.reduction_technique_map_str.index(
@@ -61,6 +81,15 @@ def get_top_images(k, l, vector_file, t, image_folder, query_image):
         latent_semantics = pickle.load(handle)
     left_matrix = latent_semantics['left_matrix']
     right_matrix = latent_semantics['right_matrix']
+
+    index_file_path = os.path.join(os.getcwd(), '_'.join([str(l), str(k), vector_file]) + '.pickle')
+    if not os.path.isfile(index_file_path):
+        hash_family = build_indexes(l, k, left_matrix)
+        with open(index_file_path, 'wb') as handle:
+            pickle.dump(hash_family, handle, protocol=pickle.HIGHEST_PROTOCOL)
+    else:
+        with open(index_file_path, 'rb') as handle:
+            hash_family = pickle.load(handle)
 
     images, features = [], []
     for filename in os.listdir(image_folder):
@@ -78,7 +107,7 @@ def get_top_images(k, l, vector_file, t, image_folder, query_image):
     index_images = transformed_images[:-1]
     query = transformed_images[-1]
 
-    layered_hash_bucket, query_hash_codes = build_index(l, k, left_matrix, index_images, query)
+    layered_hash_bucket, query_hash_codes = populate_indexes(hash_family, index_images, query)
 
     retrieved_image_indexes, pruned_hash = [], -1
     while len(set(retrieved_image_indexes)) < t:
@@ -88,7 +117,9 @@ def get_top_images(k, l, vector_file, t, image_folder, query_image):
 
     unique_images = [index_images[image_index] for image_index in unique_image_indexes]
     similarity_map = similarity_model(query, unique_images)
-    similarity_image_map = [[score, images[index]] for score, index in zip(similarity_map, unique_image_indexes)]
+    similarity_image_map = [[score, unique_images[index], images[index]] for score, index in zip(
+        similarity_map, unique_image_indexes
+    )]
     similarity_image_map = sorted(similarity_image_map, key=lambda x: x[0], reverse=True)
 
     return similarity_image_map, vector_file_tokens
@@ -98,11 +129,12 @@ def start_task4():
     l = int(input('enter num of layers: '))
     k = int(input('enter num of hashes per layer: '))
     vector_file = input('enter vector file: ')
-    t = int(input('enter number of retrievals: '))
     image_folder = os.path.join(os.getcwd(), input('enter image folder: '))
 
     query_image_path = os.path.join(os.getcwd(), input('enter query image name') + '.png')
     query_image = cv2.imread(query_image_path, cv2.IMREAD_GRAYSCALE)
+
+    t = int(input('enter number of retrievals: '))
 
     similarity_image_map, vector_file_tokens = get_top_images(
         l, k, vector_file, t, image_folder, query_image
