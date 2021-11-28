@@ -137,3 +137,6 @@ query/
 *.pickle
 *.json
 *.csv
+*.png
+
+indexing_images

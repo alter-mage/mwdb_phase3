@@ -82,8 +82,7 @@ def get_top_images(l, k, vector_file, t, image_folder, query_image):
         feature_model_inp = int(input('enter feature model: '))
         feature_model = utilities.feature_extraction[feature_model_inp]
 
-        query_transformation_model_inp = int(input('enter reduction model: '))
-        query_transformation_model = utilities.query_transformation[query_transformation_model_inp]
+        query_transformation_model = utilities.query_transformation[0]
 
         similarity_model = utilities.similarity_map[feature_model_inp]
     else:
