@@ -125,8 +125,16 @@ class DecisionTreeClassifier():
         else:
             return self.predict(row, node.right_br)
 
-    def fit(self, data):
-        self.root = self.make_tree(data)
+    def fit(self, X_train, Y_train):
+        X_train = X_train
+        Y_train = Y_train
+        training_data = []
+        for i in range(len(X_train)):
+            a = []
+            a.extend(X_train[i])
+            a.append(Y_train[i])
+            training_data.append(a)
+        self.root = self.make_tree(training_data)
         return self.root
 
     def transform(self, data):
