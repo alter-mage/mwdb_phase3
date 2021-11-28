@@ -29,7 +29,10 @@ def task_input(metadata):
     while not (0 <= c <= 2):
         c = int(input('Enter Classifier Number (0-2): '))
     
-    return k, model, c
+    print('Test Folder:')
+    test_folder = str(input('Enter the name of the test folder: '))
+    
+    return k, model, c, test_folder
 
 def get_matrix(metadata, feature_model, task_number):
     data_matrix = []
@@ -44,7 +47,7 @@ def get_data_for_task(task_number):
     with open('metadata.pickle', 'rb') as handle:
         metadata = pickle.load(handle)
 
-    k, model, c = task_input(metadata)
+    k, model, c, test_folder = task_input(metadata)
 
     if model == 0:
         reduction_technique = 0
@@ -54,7 +57,7 @@ def get_data_for_task(task_number):
         reduction_technique = 2
     
     data_matrix, label_matrix = get_matrix(metadata, model, task_number)
-    test_dir = os.path.join(os.getcwd(), 'test_images')
+    test_dir = os.path.join(os.getcwd(), test_folder)
     if not os.path.isdir(test_dir):
         print("test_images file not found!")
         quit()
