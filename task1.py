@@ -9,6 +9,7 @@ import csv
 import min_max_scaler
 import ppr
 import decision_tree
+import accuracy_metrics
 from min_max_scaler import transform as min_max_tsf
 from sklearn.model_selection import train_test_split
 
@@ -33,8 +34,6 @@ def start_task1():
     k = -1
     while not (1 <= k <= k_upper_limit - 1):
         k = int(input('Enter value of k (latent semantics): '))
-    data_matrix, label_matrix = generate_data_matrix.get_matrix(metadata, model, 1)
-    data_matrix = min_max_tsf(data_matrix)
 
     c = -1
     print()
@@ -51,11 +50,17 @@ def start_task1():
         reduction_technique = 1
     else:
         reduction_technique = 2
-    
+
+
+    data_matrix, label_matrix = generate_data_matrix.get_matrix(metadata, model, 1)
+    data_matrix = min_max_tsf(data_matrix)
+
+
     reduction_obj_right = utilities.reduction_technique_map[reduction_technique](k, data_matrix)
     left_matrix, core_matrix, right_matrix = reduction_obj_right.transform()
-    # print(left_matrix.shape, core_matrix.shape, right_matrix.shape)
-    
+    X_train, Y_train = left_matrix, label_matrix
+
+
     # Getting features of test_images
     test_dir = os.path.join(os.getcwd(), 'test_images')
     if not os.path.isdir(test_dir):
@@ -74,18 +79,37 @@ def start_task1():
             test_labels.append(utilities.label_dict[x])
     test_array = np.array(test_array)
     test_labels = np.array(test_labels)
-
+    right_matrix = np.array(right_matrix)
+    right_matrix = np.transpose(right_matrix)
+    # print(test_array.shape, test_labels.shape, right_matrix.shape)
+    test_array = np.dot(test_array, right_matrix)
+    print(test_array.shape)
     if c == 0:
         print('\nSVM')
+        # clf = svm.fit(left_matrix, label_matrix=label_matrix)
+        clf = SVM()
+        clf.fit(X_train,Y_train)
+        # prediction = []
+        # for i in range(len(test_array)):
+        #     pred = int(clf.predict(test_array[i]))
+        #     prediction.append(pred)
+        prediction = clf.predict(test_array)
+        print(prediction)
     
     elif c == 1:
         print('\nDecision Tree')
+        clf = decision_tree.DecisionTreeClassifier()
+        node = clf.fit(X_train,Y_train)
+        prediction = []
+        for i in range(len(test_array)):
+            pred = int(clf.predict(test_array[i], node))
+            prediction.append(pred)
     else:
         print('\nPPR')
         print(utilities.feature_models[model])
         similarity_m = simp_data[utilities.feature_models[model]]['T']
         print(similarity_m.shape, test_array.shape)
-        results = ppr.predict(similarity_m, test_array)
+        prediction = ppr.predict(similarity_m, test_array)
     
     latent_out_file_path = '%s_%s_%s_%s' % ('1', utilities.feature_models[model], str(k), utilities.reduction_technique_map_str[reduction_technique])
     with open(latent_out_file_path+'.pickle', 'wb') as handle:
@@ -94,7 +118,16 @@ def start_task1():
             'core_matrix': core_matrix,
             'right_matrix': right_matrix
         }, handle, protocol=pickle.HIGHEST_PROTOCOL)
-
+    
+    # fpr, fnr = accuracy_metrics.metrics(test_labels, prediction)
+    count = 0
+    total = 0
+    for i in range(len(prediction)):
+        print(prediction[i], test_labels[i])
+        if test_labels[i] == prediction[i]:
+            count +=1
+        total +=1 
+    print(count, total)
     # print(left_matrix.shape, core_matrix.shape, right_matrix.shape)
     #clf = svm.fit(left_matrix, label_matrix=label_matrix)
     # clf = decision_tree.fit(left_matrix,label_matrix=label_matrix)
@@ -114,23 +147,6 @@ def start_task1():
     #     total+=1
     # print(count , total) 
     """
-    test_dir = os.path.join(os.getcwd(), 'test_images')
-    if not os.path.isdir(test_dir):
-        print("test_images file not found!")
-        quit()
-    test_array = []
-    test_labels = []
-    for filename in os.listdir(test_dir):
-        if filename in metadata:
-            test_array.append(metadata[filename][utilities.feature_models[model]])
-            test_labels.append(metadata[filename]['x_label'])
-        else:
-            img = cv2.imread(os.path.join(test_dir, filename), cv2.IMREAD_GRAYSCALE)
-            test_array.append(utilities.feature_extraction[model](img))
-            x, y, z = filename.split('.')[0].split('-')[1:]
-            test_labels.append(utilities.label_dict[x])
-    test_array = np.array(test_array)
-    test_labels = np.array(test_labels)
     right_matrix = np.array(right_matrix)
     right_matrix = np.transpose(right_matrix)
     print(test_array.shape, test_labels.shape, right_matrix.shape)

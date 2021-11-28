@@ -8,7 +8,7 @@ def metrics(real, obs, task):
 
     Output: False Positive Rate Matrix, False Negative Rate Matrix
     '''
-    tot = total[task]
+    tot = total[task] + 1
     fpr, fnr = [], []
     for val in range(1, tot):
         fp, tp, fn, tn = 0, 0, 0, 0
@@ -26,4 +26,6 @@ def metrics(real, obs, task):
         fnr_1 = fn/(fn+tp)
         fpr.append(fpr_1)
         fnr.append(fnr_1)
+    for i in range(1, tot):
+        print(fpr[i], fnr[i])
     return fpr, fnr

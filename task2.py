@@ -56,13 +56,13 @@ def start_task2():
     
     X_train, X_test, y_train, y_test = train_test_split(left_matrix, label_matrix,test_size = 0.10)
     
-    
-    clf = decision_tree.fit(X_train,label_matrix=y_train)
+    clf = decision_tree.DecisionTreeClassifier()
+    node = clf.fit(X_train,y_train)
     count = 0
     total = 0
     for i in range(len(X_test)):
-        prediction = int(clf.predict([X_test[i]])[0]) 
-        print (prediction,y_test[i])
+        prediction = int(clf.predict(X_test[i], node))
+        print(prediction,y_test[i])
         if prediction == y_test[i]:
             count +=1
         total +=1 
