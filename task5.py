@@ -17,12 +17,14 @@ def get_top_images(b, vector_file, t, image_folder, query_image):
         feature_model_inp = int(input('enter feature model: '))
         feature_model = utilities.feature_extraction[feature_model_inp]
         query_transformation_model = utilities.query_transformation[0]
+        similarity_model = utilities.similarity_map[feature_model_inp]
     else:
         vector_file_tokens = vector_file.split('_')
         feature_model = utilities.feature_extraction[utilities.feature_models.index(vector_file_tokens[1])]
         query_transformation_model = utilities.query_transformation[utilities.reduction_technique_map_str.index(
             vector_file_tokens[-1]
         )]
+        similarity_model = utilities.similarity_map[utilities.feature_models.index(vector_file_tokens[1])]
 
     images, features = [], []
     for filename in os.listdir(image_folder):
@@ -110,9 +112,8 @@ def get_top_images(b, vector_file, t, image_folder, query_image):
                 dst = sorted(dst, key=itemgetter(0))
             dist = dst[-1][0]
 
-    actual = []
-    for i in range(len(images)):
-        actual.append((np.linalg.norm((images[i] - query_image), ord=1), i))
+    actual = similarity_model(query, index_images)
+    actual = [(actual[i], i) for i in range(len(actual))]
     actual = sorted(actual, key=itemgetter(0))[:t]
     actual_ind = [actuali[1] for actuali in actual]
     hit = 0
@@ -121,7 +122,7 @@ def get_top_images(b, vector_file, t, image_folder, query_image):
             hit += 1
     
     metrics = {
-        'index_size_in_bytes': b*len(index_images),
+        'index_size_in_bytes': math.ceil(math.log2(b))*len(index_images),
         'bucket_searched': len(l),
         'unique_images_considered': len(images_considered),
         'overall_images_considered': len(images_considered),
