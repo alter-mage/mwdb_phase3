@@ -5,72 +5,57 @@ import generate_data_matrix
 import svm
 import numpy as np
 import cv2
-# import aggregation
 import csv
 import min_max_scaler
+import ppr
 import decision_tree
-from sklearn.model_selection import train_test_split
 import accuracy_metrics
+from min_max_scaler import transform as min_max_tsf
+from sklearn.model_selection import train_test_split
+from get_task_data import get_data_for_task
+
+from svm import MulticlassSVM as SVM
 
 def start_task3():
-
-    # Reading metadata.pickle file, image representations
-    with open('metadata.pickle', 'rb') as handle:
-        metadata = pickle.load(handle)
-        
-    #input model number
-    model = -1
-    print()
-    print("Data Models:")
-    for index, value in enumerate(utilities.feature_models):
-        print(index, value)
-    while not (0 <= model <= 2):
-        model = int(input('Enter Model Number (0-2): '))
     
-
-    #input value of k
-    k_upper_limit = len(metadata[next(iter(metadata))][utilities.feature_models[model]])
-    k = -1
-    while not (1 <= k <= k_upper_limit - 1):
-        k = int(input('Enter value of k (latent semantics): '))
-
-    #getting data_matrix and label matrix for the task    
-    data_matrix, label_matrix = generate_data_matrix.get_matrix(metadata, model, 3)
-    
-   
-    reduction_technique = 0
+    with open('simp.pickle', 'rb') as handle:
+        simp_data = pickle.load(handle)
     
     
-    reduction_obj_right = utilities.reduction_technique_map[reduction_technique](k, data_matrix)
-    left_matrix, core_matrix, right_matrix = reduction_obj_right.transform()
-
-    latent_out_file_path = '%s_%s_%s_%s' % ('3', utilities.feature_models[model], str(k), utilities.reduction_technique_map_str[reduction_technique])
-    with open(latent_out_file_path+'.pickle', 'wb') as handle:
-        pickle.dump({
-            'left_matrix': left_matrix,
-            'core_matrix': core_matrix,
-            'right_matrix': right_matrix
-        }, handle, protocol=pickle.HIGHEST_PROTOCOL)
-    # print(left_matrix.shape, core_matrix.shape, right_matrix.shape)
-    #clf = svm.fit(left_matrix, label_matrix=label_matrix)
+    X_train, X_test, Y_train, Y_test, k, model, c, test_array = get_data_for_task(3)
+    if c == 0:
+        print('\nSVM')
+        clf = SVM()
+        clf.fit(X_train,Y_train)
+        prediction = clf.predict(X_test)
+        print(prediction)
     
-    X_train, X_test, y_train, y_test = train_test_split(left_matrix, label_matrix,test_size = 0.10)
+    elif c == 1:
+        print('\nDecision Tree')
+        clf = decision_tree.DecisionTreeClassifier()
+        node = clf.fit(X_train,Y_train)
+        prediction = []
+        for i in range(len(X_test)):
+            pred = int(clf.predict(X_test[i], node))
+            prediction.append(pred)
+    else:
+        print('\nPPR')
+        print(utilities.feature_models[model])
+        similarity_m = simp_data[utilities.feature_models[model]]['S']
+        prediction = ppr.predict(similarity_m, test_array)
     
     
-    clf = decision_tree.fit(X_train,label_matrix=y_train)
+    
+    # fpr, fnr = accuracy_metrics.metrics(test_labels, prediction)
     count = 0
     total = 0
-    for i in range(len(X_test)):
-        prediction = int(clf.predict([X_test[i]])[0]) 
-        print (prediction,y_test[i])
-        if prediction == y_test[i]:
+    for i in range(len(prediction)):
+        print(prediction[i], Y_test[i])
+        if Y_test[i] == prediction[i]:
             count +=1
         total +=1 
-
-    print(count , total) 
-
-
-
+    print(count, total)
+    
     
 if __name__ == '__main__':
     start_task3() 
