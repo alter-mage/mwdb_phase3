@@ -133,10 +133,14 @@ def get_top_images(l, k, vector_file, t, image_folder, query_image):
 
     layered_hash_bucket, query_hash_codes, index_size = populate_indexes(k, hash_family, index_images, query)
 
-    retrieved_image_indexes, pruned_hash = [], -1
+    retrieved_image_indexes, buckets_searched, pruned_hash, all_images_retrieved = [], 0, -1, False
     while len(set(retrieved_image_indexes)) < t:
         pruned_hash += 1
         retrieved_image_indexes, buckets_searched = retrieve_images(layered_hash_bucket, query_hash_codes, pruned_hash, k)
+
+        if len(set(retrieved_image_indexes)) == len(index_images):
+            all_images_retrieved = True
+            break
     unique_image_indexes = set(retrieved_image_indexes)
 
     unique_images = [index_images[image_index] for image_index in unique_image_indexes]
@@ -165,7 +169,7 @@ def get_top_images(l, k, vector_file, t, image_folder, query_image):
         'bucket_searched': buckets_searched
     }
 
-    return similarity_image_map, metrics
+    return similarity_image_map, metrics, all_images_retrieved
 
 
 def start_task4():
@@ -180,7 +184,7 @@ def start_task4():
 
     t = int(input('enter number of retrievals: '))
 
-    similarity_image_map, metrics = get_top_images(
+    similarity_image_map, metrics, _ = get_top_images(
         l, k, vector_file, t, image_folder, query_image
     )
 
