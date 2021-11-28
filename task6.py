@@ -59,7 +59,7 @@ def start_task6():
     plot_results(top_images, query_image, t)
 
     top_k_train = []
-    for i in top_images:
+    for i in similarity_image_map[:t]:
         top_k_train.append(i[1])
 
     labels = get_feedback()
@@ -87,9 +87,7 @@ def start_task6():
             relevant_images += irrelevant_images
             relevant_images = relevant_images[:t]
     
-    plot_results(relevant_images, query_image, t)
-    print(len(relevant_images))
-    print("done")
+    plot_results([image[2] for image in relevant_images], query_image, t)
 
 
 if __name__ == "__main__":

@@ -126,5 +126,9 @@ class MulticlassSVM(BaseEstimator, ClassifierMixin):
 
     def predict(self, X):
         decision = np.dot(X, self.coef_.T)
-        pred = decision.argmax(axis=1)
-        return self._label_encoder.inverse_transform(pred)
+        if len(decision.shape) == 1:
+            pred = decision.argmax()
+            return pred
+        else:
+            pred = decision.argmax(axis=1)
+            return self._label_encoder.inverse_transform(pred)

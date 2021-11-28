@@ -3,36 +3,31 @@ import cv2
 import numpy as np
 import matplotlib.pyplot as plt
 
+import task4
 from task4 import get_top_images
 from svm import MulticlassSVM as SVM
 
 
-def get_feedback(t):
-    print("In the order of display, please enter if image is relevant (1) or irrelevant (0)")
-    relevances = []
-    for index in range(t):
-        relevance = int(input("Relevant (1) or irrelevant (0): "))
-        relevances.append(relevance)
-    return relevances
-
-
-def plot_images(t, query_image, top_images):
+def plot_results(top_images, query_image, t):
     fig, axes = plt.subplots(t + 1, 1)
     for i, axis in enumerate(axes):
-        if i == len(top_images):
-            break
         if i == 0:
             img = query_image
             # axis.text(74, 25, query, size=9)
             axis.text(74, 45, 'Original image', size=9)
         else:
-            img = top_images[i - 1][2]
-            axis.text(74, 45, str(top_images[i - 1][0]), size=9)
+            img = top_images[i - 1]
         axis.imshow(img, cmap='gray')
         axis.tick_params(left=False, right=False, labelleft=False, labelbottom=False, bottom=False)
-    # fig.suptitle(str(t) + ' most similar images - ' +
-    #              utilities.similarity_measures[utilities.feature_models.index(vector_file_tokens[1])], size=10)
+    fig.suptitle(str(t) + ' most similar images')
     plt.show()
+
+
+def get_feedback():
+    label_input = [int(i) for i in input(
+        "enter comma separated 1 or 0 for each result, 1 for relevant, 0 for irrelevant"
+    ).split(',')]
+    return label_input
 
 
 def get_trained_model(features, labels):
@@ -57,28 +52,49 @@ def start_task7():
     query_image_path = os.path.join(os.getcwd(), input('Enter query image name') + '.png')
     query_image = cv2.imread(query_image_path, cv2.IMREAD_GRAYSCALE)
 
-    similarity_image_map, vector_file_tokens = get_top_images(l, k, vector_file, t, image_folder, query_image)
+    similarity_image_map, _, __ = get_top_images(l, k, vector_file, t, image_folder, query_image)
 
-    top_images = similarity_image_map[:t]
-    plot_images(t, query_image, top_images)
-    labels = get_feedback(t)
+    top_images = [image[2] for image in similarity_image_map[:t]]
+    plot_results(top_images, query_image, t)
 
-    features = [image[1] for image in top_images]
-    labels = [-1 if label == 0 else 1 for label in labels]
-    clf = get_trained_model(features, labels)
+    top_k_train = []
+    for i in similarity_image_map[:t]:
+        top_k_train.append(i[1])
+
+    labels = get_feedback()
+    while not (len(labels) == t):
+        labels = get_feedback()
+
+    clf = get_trained_model(top_k_train, labels)
 
     test_features = [similarity_image[1] for similarity_image in similarity_image_map]
     prediction_results = clf.predict(test_features)
 
-    image_with_scores = []
-    for index in range(0, len(prediction_results)):
-        prediction_result = prediction_results[index]
-        if prediction_result == 1:
-            image_with_scores.append(similarity_image_map[index])
+    relevant_images, counter = [], 2
+    while len(relevant_images) < t:
+        similarity_image_map_post_feedback, _, index_flag = task4.get_top_images(
+            l, k, vector_file, counter * t, image_folder, query_image
+        )
 
-    plot_images(t, query_image, image_with_scores)
+        relevant_images, irrelevant_images = [], []
+        for i in similarity_image_map_post_feedback:
+            pred = clf.predict(i[1])
+            if pred == 1:
+                relevant_images.append(i)
+            else:
+                irrelevant_images.append(i)
+        counter += 1
 
+        if index_flag:
+            relevant_images += irrelevant_images
+            relevant_images = relevant_images[:t]
 
+    # for index in range(0, len(prediction_results)):
+    #     prediction_result = prediction_results[index]
+    #     if prediction_result == 1:
+    #         image_with_scores.append(similarity_image_map[index])
+
+    plot_results([image[2] for image in relevant_images], query_image, t)
 
 
 if __name__ == '__main__':

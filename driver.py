@@ -7,14 +7,13 @@ import task2
 import task3
 import task4
 # import task5
-# import task6
-# import task7
+import task6
+import task7
 # import task8
 # import task9
-import task6
 
 task_map = [None, task1.start_task1, task2.start_task2, task3.start_task3, task4.start_task4, None,
-            task6.start_task6]
+            task6.start_task6, task7.start_task7]
 
 if __name__ == '__main__':
     metadata_file = os.path.join(os.getcwd(), 'metadata.pickle')
