@@ -148,7 +148,7 @@ def get_top_images(input_list=None):
         'false_positive_rate': (len(images_considered) - hit) / t
     }
 
-    top_images = [dst[i][0], index_images[[dst[i][1]]], images[dst[i][1]] for i in len(dst)]
+    top_images = [[dst[i][0], index_images[[dst[i][1]]], images[dst[i][1]]] for i in range(len(dst))]
     return input_list, top_images, metrics, False
 
 
