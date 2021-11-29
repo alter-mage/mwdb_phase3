@@ -17,6 +17,7 @@ def task_input(metadata):
 
     k_upper_limit = len(metadata[next(iter(metadata))][utilities.feature_models[model]])
     print()
+    print("All features = {}".format(k_upper_limit-1))
     k = -1
     while not (1 <= k <= k_upper_limit - 1):
         k = int(input('Enter value of k (latent semantics): '))
@@ -29,7 +30,10 @@ def task_input(metadata):
     while not (0 <= c <= 2):
         c = int(input('Enter Classifier Number (0-2): '))
     
-    return k, model, c
+    print('Test Folder:')
+    test_folder = str(input('Enter the name of the test folder: '))
+    
+    return k, model, c, test_folder
 
 def get_matrix(metadata, feature_model, task_number):
     data_matrix = []
@@ -44,17 +48,17 @@ def get_data_for_task(task_number):
     with open('metadata.pickle', 'rb') as handle:
         metadata = pickle.load(handle)
 
-    k, model, c = task_input(metadata)
+    k, model, c, test_folder = task_input(metadata)
 
     if model == 0:
         reduction_technique = 0
     elif model == 1:
         reduction_technique = 1
     else:
-        reduction_technique = 2
+        reduction_technique = 0
     
     data_matrix, label_matrix = get_matrix(metadata, model, task_number)
-    test_dir = os.path.join(os.getcwd(), 'test_images')
+    test_dir = os.path.join(os.getcwd(), test_folder)
     if not os.path.isdir(test_dir):
         print("test_images file not found!")
         quit()
@@ -72,7 +76,9 @@ def get_data_for_task(task_number):
 
     test_array = []
     test_labels = []
+    test_file_names = []
     for filename in os.listdir(test_dir):
+        test_file_names.append(filename)
         if filename in metadata:
             test_array.append(metadata[filename][utilities.feature_models[model]])
             test_labels.append(metadata[filename][utilities.labels[task_number-1]])
@@ -101,7 +107,7 @@ def get_data_for_task(task_number):
     left_matrix, core_matrix, right_matrix = reduction_obj_right.transform()
     
     X_train, X_test = left_matrix[:len_data_matrix], left_matrix[len_data_matrix:]
-    return X_train, X_test, label_matrix, test_labels, k, model, c, test_array
+    return X_train, X_test, label_matrix, test_labels, k, model, c, test_array , test_file_names
 
 if __name__ == "__main__":
     

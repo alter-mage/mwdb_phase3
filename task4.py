@@ -107,7 +107,7 @@ def get_top_images(l, k, vector_file, t, image_folder, query_image):
 
     if vector_file == 'all':
         left_matrix = scaled_features
-        right_matrix = np.full(shape=(len(scaled_features[1]), len(scaled_features[1])), fill_value=1)
+        right_matrix = np.identity(len(scaled_features[1]))
     else:
         with open(vector_file + '.pickle', 'rb') as handle:
             latent_semantics = pickle.load(handle)
