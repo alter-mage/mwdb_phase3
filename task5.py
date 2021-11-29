@@ -127,7 +127,7 @@ def get_top_images(b, vector_file, t, image_folder, query_image):
         'unique_images_considered': len(images_considered),
         'overall_images_considered': len(images_considered),
         'miss_rate': (t - hit) / t,
-        'false_positive_rate': (len(images_considered) - hit) / (len(index_images) - t)
+        'false_positive_rate': (len(images_considered) - hit) / t
     }
 
     top_images = [images[dsti[1]] for dsti in dst]
