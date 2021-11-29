@@ -1,10 +1,13 @@
 import os
 import cv2
 import task4
+import task5
 import numpy as np
 import matplotlib.pyplot as plt
 
 from svm import MulticlassSVM as SVM
+
+index_map = [task4.get_top_images, task5.get_top_images]
 
 
 # Function used to plot images
@@ -40,22 +43,16 @@ def get_trained_model(features, labels):
 
 # Main function of task7
 def start_task7():
-    similar_images_task = int(input('Enter task based on which similar images required [4/5]:'))
-    if (similar_images_task != 4 and similar_images_task != 5):
+    similar_images_task = int(input('Enter task based on which similar images required, 0 for LSH and 1 for VA-file:'))
+    if similar_images_task not in [0, 1]:
         print('Similar images can only be retrieved based on task 4/5, incorrect input')
         print("Terminating...")
-        quit()
+        return
 
-    l = int(input('Enter the number of layer: '))
-    k = int(input('Enter the number of hash per layer: '))
-    vector_file = input('Input vector file: ')
-    t = int(input('Enter the number of similar images required: '))
-    image_folder = os.path.join(os.getcwd(), input('Enter image folder name: '))
-
-    query_image_path = os.path.join(os.getcwd(), input('Enter query image name') + '.png')
+    input_list, similarity_image_map, _, __ = index_map[similar_images_task]()
+    t, query_image_name = input_list[-3], input_list[-1]
+    query_image_path = os.path.join(os.getcwd(), query_image_name + '.png')
     query_image = cv2.imread(query_image_path, cv2.IMREAD_GRAYSCALE)
-
-    similarity_image_map, _, __ = task4.get_top_images(l, k, vector_file, t, image_folder, query_image)
 
     top_images = [image[2] for image in similarity_image_map[:t]]
     plot_results(top_images, query_image, t)
@@ -75,9 +72,8 @@ def start_task7():
 
     relevant_images, counter = [], 2
     while len(relevant_images) < t:
-        similarity_image_map_post_feedback, _, index_flag = task4.get_top_images(
-            l, k, vector_file, counter * t, image_folder, query_image
-        )
+        input_list[-3] *= counter
+        input_list_temp, similarity_image_map_post_feedback, _, index_flag = index_map[similar_images_task](input_list)
 
         relevant_images, irrelevant_images = [], []
         for i in similarity_image_map_post_feedback:
@@ -91,11 +87,6 @@ def start_task7():
         if index_flag:
             relevant_images += irrelevant_images
             relevant_images = relevant_images[:t]
-
-    # for index in range(0, len(prediction_results)):
-    #     prediction_result = prediction_results[index]
-    #     if prediction_result == 1:
-    #         image_with_scores.append(similarity_image_map[index])
 
     plot_results([image[2] for image in relevant_images], query_image, t)
 

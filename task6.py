@@ -2,6 +2,7 @@ import os
 import cv2
 import task4
 import matplotlib.pyplot as plt
+import numpy as np
 
 import task5
 from task4 import get_top_images
