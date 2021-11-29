@@ -12,7 +12,25 @@ from itertools import islice
 import min_max_scaler
 import utilities
 
-def get_top_images(b, vector_file, t, image_folder, query_image):
+def get_top_images(input_list=None):
+    if not input_list:
+        b = int(input('enter num of bits per dimensions (b): '))
+        vector_file = input('enter vector file: ')
+        image_folder = os.path.join(os.getcwd(), input('enter image folder: '))
+
+        query_image_name = input('enter query image name: ')
+        query_image_path = os.path.join(os.getcwd(), query_image_name + '.png')
+        query_image = cv2.imread(query_image_path, cv2.IMREAD_GRAYSCALE)
+
+        t = int(input('enter number of retrievals: '))
+
+        input_list = [b, vector_file, t, image_folder, query_image_name]
+    else:
+        b, vector_file, t, image_folder, query_image_name =\
+            input_list[0], input_list[1], input_list[2], input_list[3], input_list[4]
+        query_image_path = os.path.join(os.getcwd(), query_image_name + '.png')
+        query_image = cv2.imread(query_image_path, cv2.IMREAD_GRAYSCALE)
+
     if vector_file == 'all':
         feature_model_inp = int(input('enter feature model: '))
         feature_model = utilities.feature_extraction[feature_model_inp]
@@ -73,7 +91,7 @@ def get_top_images(b, vector_file, t, image_folder, query_image):
         hash = ''
         for j in range(d):
             for k in range(len(p[j])-1):
-                if p[j][k] <= transformed_images[i][j] and p[j][k+1] > transformed_images[i][j]:
+                if p[j][k] <= transformed_images[i][j] < p[j][k + 1]:
                     if i == len(transformed_images)-1:
                         rq.append(k)
                     elif bj[j] > 0:
@@ -131,21 +149,15 @@ def get_top_images(b, vector_file, t, image_folder, query_image):
     }
 
     top_images = [images[dsti[1]] for dsti in dst]
-    return top_images, metrics
+    return input_list, top_images, metrics, False
 
 
 def start_task5():
-    b = int(input('enter num of bits per dimensions (b): '))
-    vector_file = input('enter vector file: ')
-    image_folder = os.path.join(os.getcwd(), input('enter image folder: '))
-
-    query_image_name = input('enter query image name: ')
+    input_list, top_images, metrics, _ = get_top_images()
+    b, vector_file, t, image_folder, query_image_name = \
+        input_list[0], input_list[1], input_list[2], input_list[3], input_list[4]
     query_image_path = os.path.join(os.getcwd(), query_image_name + '.png')
     query_image = cv2.imread(query_image_path, cv2.IMREAD_GRAYSCALE)
-
-    t = int(input('enter number of retrievals: '))
-
-    top_images, metrics = get_top_images(b, vector_file, t, image_folder, query_image)
 
     fig, axes = plt.subplots(t + 1, 1)
     for i, axis in enumerate(axes):
@@ -164,4 +176,4 @@ def start_task5():
 
 
 if __name__ == '__main__':
-    start_task5() 
+    start_task5()

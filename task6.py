@@ -3,8 +3,11 @@ import cv2
 import task4
 import matplotlib.pyplot as plt
 
+import task5
 from task4 import get_top_images
 from decision_tree import DecisionTreeClassifier
+
+index_map = [task4.get_top_images, task5.get_top_images]
 
 
 # Function used to plot images
@@ -45,19 +48,16 @@ def get_predictor_object(top_k_relevant, labels_for_top_k):
 
 # Main function of task6
 def start_task6():
-
-    # Input parameters if user selects task 4 for retrieving similar images.
-    l = int(input('enter num of layers: '))
-    k = int(input('enter num of hashes per layer: '))
-    vector_file = input('enter vector file: ')
-    t = int(input('enter number of retrievals: '))
-    image_folder = os.path.join(os.getcwd(), input('enter image folder: '))
-    query_image_path = os.path.join(os.getcwd(), input('enter query image name') + '.png')
-    query_image = cv2.imread(query_image_path, cv2.IMREAD_GRAYSCALE)
+    similar_images_task = int(input('Enter task based on which similar images required, 0 for LSH and 1 for VA-file:'))
+    if similar_images_task not in [0, 1]:
+        print('Similar images can only be retrieved based on task 4/5, incorrect input')
+        print("Terminating...")
+        return
     
-    similarity_image_map, _, __ = get_top_images(
-        l, k, vector_file, t, image_folder, query_image
-    )
+    input_list, similarity_image_map, _, __ = index_map[similar_images_task]()
+    t, query_image_name = input_list[-3], input_list[-1]
+    query_image_path = os.path.join(os.getcwd(), query_image_name + '.png')
+    query_image = cv2.imread(query_image_path, cv2.IMREAD_GRAYSCALE)
 
     top_images = [image[2] for image in similarity_image_map[:t]]
     plot_results(top_images, query_image, t)
@@ -74,9 +74,8 @@ def start_task6():
 
     relevant_images, counter = [], 2
     while len(relevant_images) < t:
-        similarity_image_map_post_feedback, _, index_flag = task4.get_top_images(
-            l, k, vector_file, counter*t, image_folder, query_image
-        )
+        input_list[-3] *= counter
+        input_list_temp, similarity_image_map_post_feedback, _, index_flag = index_map[similar_images_task](input_list)
 
         relevant_images, irrelevant_images = [], []
         for i in similarity_image_map_post_feedback:

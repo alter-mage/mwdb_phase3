@@ -77,7 +77,26 @@ def build_index(l, k, left_matrix, index_images, query):
     return layered_hash_bucket, query_hash_codes
 
 
-def get_top_images(l, k, vector_file, t, image_folder, query_image):
+def get_top_images(input_list=None):
+    if not input_list:
+        l = int(input('enter num of layers: '))
+        k = int(input('enter num of hashes per layer: '))
+        vector_file = input('enter vector file: ')
+        image_folder = os.path.join(os.getcwd(), input('enter image folder: '))
+
+        query_image_name = input('enter query image name')
+        query_image_path = os.path.join(os.getcwd(), query_image_name + '.png')
+        query_image = cv2.imread(query_image_path, cv2.IMREAD_GRAYSCALE)
+
+        t = int(input('enter number of retrievals: '))
+
+        input_list = [l, k, vector_file, t, image_folder, query_image_name]
+    else:
+        l, k, vector_file, t, image_folder, query_image_name =\
+            input_list[0], input_list[1], input_list[2], input_list[3], input_list[4], input_list[5]
+        query_image_path = os.path.join(os.getcwd(), query_image_name + '.png')
+        query_image = cv2.imread(query_image_path, cv2.IMREAD_GRAYSCALE)
+
     if vector_file == 'all':
         feature_model_inp = int(input('enter feature model: '))
         feature_model = utilities.feature_extraction[feature_model_inp]
@@ -168,24 +187,16 @@ def get_top_images(l, k, vector_file, t, image_folder, query_image):
         'bucket_searched': buckets_searched
     }
 
-    return similarity_image_map, metrics, all_images_retrieved
+    return input_list, similarity_image_map, metrics, all_images_retrieved
 
 
 def start_task4():
-    l = int(input('enter num of layers: '))
-    k = int(input('enter num of hashes per layer: '))
-    vector_file = input('enter vector file: ')
-    image_folder = os.path.join(os.getcwd(), input('enter image folder: '))
+    input_list, similarity_image_map, metrics, _ = get_top_images()
+    l, k, vector_file, t, image_folder, query_image_name = \
+        input_list[0], input_list[1], input_list[2], input_list[3], input_list[4], input_list[5]
 
-    query_image_name = input('enter query image name')
     query_image_path = os.path.join(os.getcwd(), query_image_name + '.png')
     query_image = cv2.imread(query_image_path, cv2.IMREAD_GRAYSCALE)
-
-    t = int(input('enter number of retrievals: '))
-
-    similarity_image_map, metrics, _ = get_top_images(
-        l, k, vector_file, t, image_folder, query_image
-    )
 
     top_images = similarity_image_map[:t]
     fig, axes = plt.subplots(t + 1, 1)
