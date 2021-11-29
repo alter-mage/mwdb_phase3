@@ -1,13 +1,13 @@
 import os
 import cv2
+import task4
 import numpy as np
 import matplotlib.pyplot as plt
 
-import task4
-from task4 import get_top_images
 from svm import MulticlassSVM as SVM
 
 
+# Function used to plot images
 def plot_results(top_images, query_image, t):
     fig, axes = plt.subplots(t + 1, 1)
     for i, axis in enumerate(axes):
@@ -23,6 +23,7 @@ def plot_results(top_images, query_image, t):
     plt.show()
 
 
+# Function used to obtain relevance feedback from the user.
 def get_feedback():
     label_input = [int(i) for i in input(
         "enter comma separated 1 or 0 for each result, 1 for relevant, 0 for irrelevant"
@@ -30,12 +31,14 @@ def get_feedback():
     return label_input
 
 
+# Obtain trained SVM classifier based on input training data
 def get_trained_model(features, labels):
     clf = SVM()
     clf.fit(np.array(features), labels)
     return clf
 
 
+# Main function of task7
 def start_task7():
     similar_images_task = int(input('Enter task based on which similar images required [4/5]:'))
     if (similar_images_task != 4 and similar_images_task != 5):
@@ -52,7 +55,7 @@ def start_task7():
     query_image_path = os.path.join(os.getcwd(), input('Enter query image name') + '.png')
     query_image = cv2.imread(query_image_path, cv2.IMREAD_GRAYSCALE)
 
-    similarity_image_map, _, __ = get_top_images(l, k, vector_file, t, image_folder, query_image)
+    similarity_image_map, _, __ = task4.get_top_images(l, k, vector_file, t, image_folder, query_image)
 
     top_images = [image[2] for image in similarity_image_map[:t]]
     plot_results(top_images, query_image, t)

@@ -14,7 +14,8 @@ def predict(similarity_m, test_array):
         s_vector[-1] = 1
         results = []
         for i in range(len(test_array)):
-                q = np.array(test_array[i]).T
+                q = np.array(test_array[i])
+                q = q.T
                 similarity_q_m = np.vstack([similarity_m, q])
                 t_matrix = similarity_q_m @ similarity_q_m.T
                 similarity_m_1 = min_max_scaler.transform(t_matrix)
