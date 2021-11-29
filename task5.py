@@ -114,7 +114,7 @@ def get_top_images(b, vector_file, t, image_folder, query_image):
 
     actual = similarity_model(query, index_images)
     actual = [(actual[i], i) for i in range(len(actual))]
-    actual = sorted(actual, key=itemgetter(0))[:t]
+    actual = sorted(actual, key=itemgetter(0), reverse=True)[:t]
     actual_ind = [actuali[1] for actuali in actual]
     hit = 0
     for i in actual_ind:
