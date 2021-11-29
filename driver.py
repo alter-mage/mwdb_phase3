@@ -23,12 +23,12 @@ if __name__ == '__main__':
 
     inpt = ''
     while True:
-        inpt = input('Enter task number (1-9, q to quit): ')
+        inpt = input('Enter task number (1-7, q to quit): ')
         if inpt == 'q':
             break
 
         task = int(inpt)
-        if 1 <= task <= 9:
+        if 1 <= task <= 7:
             task_map[task]()
 
 
