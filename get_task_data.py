@@ -17,6 +17,7 @@ def task_input(metadata):
 
     k_upper_limit = len(metadata[next(iter(metadata))][utilities.feature_models[model]])
     print()
+    print("All features = {}".format(k_upper_limit-1))
     k = -1
     while not (1 <= k <= k_upper_limit - 1):
         k = int(input('Enter value of k (latent semantics): '))
@@ -54,7 +55,7 @@ def get_data_for_task(task_number):
     elif model == 1:
         reduction_technique = 1
     else:
-        reduction_technique = 2
+        reduction_technique = 0
     
     data_matrix, label_matrix = get_matrix(metadata, model, task_number)
     test_dir = os.path.join(os.getcwd(), test_folder)
@@ -75,7 +76,9 @@ def get_data_for_task(task_number):
 
     test_array = []
     test_labels = []
+    test_file_names = []
     for filename in os.listdir(test_dir):
+        test_file_names.append(filename)
         if filename in metadata:
             test_array.append(metadata[filename][utilities.feature_models[model]])
             test_labels.append(metadata[filename][utilities.labels[task_number-1]])
@@ -104,7 +107,7 @@ def get_data_for_task(task_number):
     left_matrix, core_matrix, right_matrix = reduction_obj_right.transform()
     
     X_train, X_test = left_matrix[:len_data_matrix], left_matrix[len_data_matrix:]
-    return X_train, X_test, label_matrix, test_labels, k, model, c, test_array
+    return X_train, X_test, label_matrix, test_labels, k, model, c, test_array , test_file_names
 
 if __name__ == "__main__":
     

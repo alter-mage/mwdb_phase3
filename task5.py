@@ -132,7 +132,7 @@ def get_top_images(input_list=None):
 
     actual = similarity_model(query, index_images)
     actual = [(actual[i], i) for i in range(len(actual))]
-    actual = sorted(actual, key=itemgetter(0))[:t]
+    actual = sorted(actual, key=itemgetter(0), reverse=True)[:t]
     actual_ind = [actuali[1] for actuali in actual]
     hit = 0
     for i in actual_ind:
@@ -145,7 +145,7 @@ def get_top_images(input_list=None):
         'unique_images_considered': len(images_considered),
         'overall_images_considered': len(images_considered),
         'miss_rate': (t - hit) / t,
-        'false_positive_rate': (len(images_considered) - hit) / (len(index_images) - t)
+        'false_positive_rate': (len(images_considered) - hit) / t
     }
 
     top_images = [images[dsti[1]] for dsti in dst]
