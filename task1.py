@@ -13,7 +13,7 @@ import accuracy_metrics
 from min_max_scaler import transform as min_max_tsf
 from sklearn.model_selection import train_test_split
 from get_task_data import get_data_for_task
-
+import json
 from svm import MulticlassSVM as SVM
 
 def start_task1():
@@ -22,7 +22,7 @@ def start_task1():
         simp_data = pickle.load(handle)
     
     
-    X_train, X_test, Y_train, Y_test, k, model, c, test_array = get_data_for_task(1)
+    X_train, X_test, Y_train, Y_test, k, model, c, test_array, test_file_name = get_data_for_task(1)
     if c == 0:
         # print('\nSVM')
         clf = SVM()
@@ -51,35 +51,51 @@ def start_task1():
     print('No of Latent Semantics k: {}'.format(k))
     print('Classifier: {}\n'.format(cl[c]))
 
+    out_file_path = '%s_%s_%s_%s' % (str(task_number), utilities.feature_models[model], str(k), cl[c])
+
+    predictions_dict = dict()
+    for i in range(len(test_file_name)):
+        predictions_dict[test_file_name[i]] = dict()
+        predictions_dict[test_file_name[i]]["Real"] = utilities.valid_x[Y_test[i]]
+        predictions_dict[test_file_name[i]]["Predicted"] = utilities.valid_x[prediction[i]]
+    
+    
+    f2 = open(out_file_path + "_predictions.json" , "w")
+    json.dump(predictions_dict,f2)
+    f2.close()
+
 
 
 
     fpr, fnr = accuracy_metrics.metrics(Y_test, prediction, 1)
     print("\n\tFalse Positive Rate \t Miss Rate\n")
+    d = dict()
     for i in range(len(fpr)):
         label = utilities.valid_x[i]
         if i == 5 or i == 6 or i == 7 or i == 11:
             print("{} {} \t\t\t {}".format(label, fpr[i], fnr[i]))
         else:
             print("{} \t {} \t\t\t {}".format(label, fpr[i], fnr[i]))
+        
+        d[label] = dict()
+        d[label]['False positive rate'] = fpr[i]
+        d[label]['Miss rate'] = fnr[i]
+    
+    
+    f = open(out_file_path + ".json" , "w")
+    json.dump(d,f)
+    f.close()
+
+
     print('\n\n')
-    # results = ['Type', 'False Positive Rate', 'Miss Rate']
-    # results = np.hstack([results, fpr])
-    # results = np.hstack([results, fpr])
+    
     labels = utilities.valid_x
-    # labels = np.insert(labels, 0, 'Type', axis=0)
-    # fpr = np.insert(fpr, 0, 'False Positive Rate', axis=0)
-    # l1 = np.array(['False Positive Rate'])
-    # fpr = np.concatenate((l1, fpr), axis=0)
-    # # fnr = np.insert(fnr, 0, 'Miss Rate', axis=0)
-    # l1 = np.array(['Miss Rate'])
-    # fnr = np.concatenate((l1, fnr), axis=0)
     fpr = np.array(fpr).T
     fnr = np.array(fnr).T
     results = np.vstack((fpr, fnr))
     results = results.T
     
-    out_file_path = '%s_%s_%s_%s' % (str(task_number), utilities.feature_models[model], str(k), cl[c])
+    
     np.savetxt(out_file_path+'.csv', results, delimiter=",", fmt="%f")
 
 
