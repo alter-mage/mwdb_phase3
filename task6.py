@@ -1,13 +1,13 @@
-import task4
-from decision_tree import DecisionTreeClassifier
-import numpy as np
 import os
-from task4 import get_top_images
 import cv2
+import task4
 import matplotlib.pyplot as plt
-import utilities
+
+from task4 import get_top_images
+from decision_tree import DecisionTreeClassifier
 
 
+# Function used to plot images
 def plot_results(top_images, query_image, t):
     fig, axes = plt.subplots(t + 1, 1)
     for i, axis in enumerate(axes):
@@ -23,13 +23,14 @@ def plot_results(top_images, query_image, t):
     plt.show()
 
 
+# Function used to obtain relevance feedback from the user.
 def get_feedback():
     label_input = [int(i) for i in input(
-        "enter comma separated 1 or 0 for each result, 1 for relevant, 0 for irrelevant"
-    ).split(',')]
+        "Enter comma separated string of 1's or 0's for each result (1=relevant, 0=irrelevant): ").split(',')]
     return label_input
 
 
+# Obtain trained decision tree classifier based on input training data
 def get_predictor_object(top_k_relevant, labels_for_top_k):
 
     X_train = top_k_relevant
@@ -41,8 +42,11 @@ def get_predictor_object(top_k_relevant, labels_for_top_k):
     
     return clf, node
 
-    
+
+# Main function of task6
 def start_task6():
+
+    # Input parameters if user selects task 4 for retrieving similar images.
     l = int(input('enter num of layers: '))
     k = int(input('enter num of hashes per layer: '))
     vector_file = input('enter vector file: ')
