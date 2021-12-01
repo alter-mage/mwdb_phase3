@@ -97,32 +97,66 @@ def get_top_images(input_list=None):
         query_image_path = os.path.join(os.getcwd(), query_image_name + '.png')
         query_image = cv2.imread(query_image_path, cv2.IMREAD_GRAYSCALE)
 
-    if vector_file == 'all':
-        feature_model_inp = int(input('enter feature model: '))
-        feature_model = utilities.feature_extraction[feature_model_inp]
+    metadata_file = os.path.join(os.getcwd(), image_folder + '_metadata.pickle')
+    if os.path.isfile(metadata_file):
+        with open(metadata_file, 'rb') as handle:
+            metadata = pickle.load(handle)
+        if vector_file == 'all':
+            feature_model_inp = int(input('enter feature model: '))
+            feature_model_name = utilities.feature_models[feature_model_inp]
+            feature_model = utilities.feature_extraction[feature_model_inp]
 
-        query_transformation_model = utilities.query_transformation[0]
+            query_transformation_model = utilities.query_transformation[0]
 
-        similarity_model = utilities.similarity_map[feature_model_inp]
+            similarity_model = utilities.similarity_map[feature_model_inp]
+
+        else:
+            vector_file_tokens = vector_file.split('_')
+            feature_model_name = vector_file_tokens[1]
+            feature_model = utilities.feature_extraction[utilities.feature_models.index(vector_file_tokens[1])]
+            query_transformation_model = utilities.query_transformation[utilities.reduction_technique_map_str.index(
+                vector_file_tokens[-1]
+            )]
+            similarity_model = utilities.similarity_map[utilities.feature_models.index(vector_file_tokens[1])]
+
+        images, features = [], []
+        for image_key in metadata:
+            img = metadata[image_key]['image']
+            img_vector = metadata[image_key][feature_model_name]
+            images.append(img)
+            features.append(img_vector)
+
+        query_image_vector = feature_model(query_image)
+
+        features.append(query_image_vector)
+        scaled_features = min_max_scaler.transform(features)
     else:
-        vector_file_tokens = vector_file.split('_')
-        feature_model = utilities.feature_extraction[utilities.feature_models.index(vector_file_tokens[1])]
-        query_transformation_model = utilities.query_transformation[utilities.reduction_technique_map_str.index(
-            vector_file_tokens[-1]
-        )]
-        similarity_model = utilities.similarity_map[utilities.feature_models.index(vector_file_tokens[1])]
+        if vector_file == 'all':
+            feature_model_inp = int(input('enter feature model: '))
+            feature_model = utilities.feature_extraction[feature_model_inp]
 
-    images, features = [], []
-    for filename in os.listdir(image_folder):
-        img = cv2.imread(os.path.join(image_folder, filename), cv2.IMREAD_GRAYSCALE)
-        img_vector = feature_model(img)
-        images.append(img)
-        features.append(img_vector)
+            query_transformation_model = utilities.query_transformation[0]
 
-    query_image_vector = feature_model(query_image)
+            similarity_model = utilities.similarity_map[feature_model_inp]
+        else:
+            vector_file_tokens = vector_file.split('_')
+            feature_model = utilities.feature_extraction[utilities.feature_models.index(vector_file_tokens[1])]
+            query_transformation_model = utilities.query_transformation[utilities.reduction_technique_map_str.index(
+                vector_file_tokens[-1]
+            )]
+            similarity_model = utilities.similarity_map[utilities.feature_models.index(vector_file_tokens[1])]
 
-    features.append(query_image_vector)
-    scaled_features = min_max_scaler.transform(features)
+        images, features = [], []
+        for filename in os.listdir(image_folder):
+            img = cv2.imread(os.path.join(image_folder, filename), cv2.IMREAD_GRAYSCALE)
+            img_vector = feature_model(img)
+            images.append(img)
+            features.append(img_vector)
+
+        query_image_vector = feature_model(query_image)
+
+        features.append(query_image_vector)
+        scaled_features = min_max_scaler.transform(features)
 
     if vector_file == 'all':
         left_matrix = scaled_features
@@ -211,6 +245,6 @@ def start_task4():
         axis.tick_params(left=False, right=False, labelleft=False, labelbottom=False, bottom=False)
     plt.show()
 
-    metrics_path = os.path.join(os.getcwd(), '_'.join(['lsh', str(l), str(k), vector_file, query_image_name])+'.json')
+    metrics_path = os.path.join(os.getcwd(), '_'.join(['lsh', str(l), str(k), image_folder.split('/')[-1], vector_file, query_image_name])+'.json')
     with open(metrics_path, 'w') as fp:
         json.dump(metrics, fp)

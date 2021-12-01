@@ -17,12 +17,7 @@ import json
 from svm import MulticlassSVM as SVM
 
 def start_task3():
-    
-    with open('simp.pickle', 'rb') as handle:
-        simp_data = pickle.load(handle)
-    
-    
-    X_train, X_test, Y_train, Y_test, k, model, c, test_array, test_file_name= get_data_for_task(3)
+    X_train, X_test, Y_train, Y_test, k, model, c, test_array, test_file_name, simp_data = get_data_for_task(3)
     if c == 0:
         # print('\nSVM')
         clf = SVM()

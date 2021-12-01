@@ -17,9 +17,9 @@ def task_input(metadata):
 
     k_upper_limit = len(metadata[next(iter(metadata))][utilities.feature_models[model]])
     print()
-    print("All features = {}".format(k_upper_limit-1))
+    print("All features = {}".format(k_upper_limit))
     k = -1
-    while not (1 <= k <= k_upper_limit - 1):
+    while not (1 <= k <= k_upper_limit):
         k = int(input('Enter value of k (latent semantics): '))
         
     c = -1
@@ -29,7 +29,7 @@ def task_input(metadata):
         print(index, value)
     while not (0 <= c <= 2):
         c = int(input('Enter Classifier Number (0-2): '))
-    
+
     print('Test Folder:')
     test_folder = str(input('Enter the name of the test folder: '))
     
@@ -43,10 +43,17 @@ def get_matrix(metadata, feature_model, task_number):
         label_matrix.append(metadata[key][utilities.labels[task_number-1]])
     return np.array(data_matrix), np.array(label_matrix)
 
-def get_data_for_task(task_number):
 
-    with open('metadata.pickle', 'rb') as handle:
+def get_data_for_task(task_number):
+    train_folder = str(input('Enter the name of the train folder: '))
+    metadata_file = os.path.join(os.getcwd(), train_folder + '_metadata.pickle')
+    simp_file = os.path.join(os.getcwd(), train_folder + '_simp.pickle')
+
+    with open(metadata_file, 'rb') as handle:
         metadata = pickle.load(handle)
+
+    with open(simp_file, 'rb') as handle:
+        simp_data = pickle.load(handle)
 
     k, model, c, test_folder = task_input(metadata)
 
@@ -107,7 +114,7 @@ def get_data_for_task(task_number):
     left_matrix, core_matrix, right_matrix = reduction_obj_right.transform()
     
     X_train, X_test = left_matrix[:len_data_matrix], left_matrix[len_data_matrix:]
-    return X_train, X_test, label_matrix, test_labels, k, model, c, test_array , test_file_names
+    return X_train, X_test, label_matrix, test_labels, k, model, c, test_array, test_file_names, simp_data
 
 if __name__ == "__main__":
     
